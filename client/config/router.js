@@ -1,44 +1,90 @@
-// XXX Switch to Flow-Router?
-var previousRoute;
+let previousPath;
+FlowRouter.triggers.exit([({path}) => {
+  previousPath = path;
+}]);
 
-Router.configure({
-  loadingTemplate: 'spinner',
-  notFoundTemplate: 'notfound',
-  layoutTemplate: 'defaultLayout',
+FlowRouter.route('/', {
+  name: 'home',
+  triggersEnter: [AccountsTemplates.ensureSignedIn],
+  action() {
+    Session.set('currentBoard', null);
+    Session.set('currentCard', null);
 
-  onBeforeAction: function() {
-    var options = this.route.options;
+    Filter.reset();
+    EscapeActions.executeAll();
 
-    var loggedIn = Tracker.nonreactive(function() {
-      return !! Meteor.userId();
-    });
+    BlazeLayout.render('defaultLayout', { content: 'boardList' });
+  },
+});
 
-    // Redirect logged in users to Boards view when they try to open Login or
-    // signup views.
-    if (loggedIn && options.redirectLoggedInUsers) {
-      return this.redirect('Boards');
-    }
+FlowRouter.route('/b/:id/:slug', {
+  name: 'board',
+  action(params) {
+    const currentBoard = params.id;
+    const previousBoard = Session.get('currentBoard');
+    Session.set('currentBoard', currentBoard);
+    Session.set('currentCard', null);
 
-    // Authenticated
-    if (! loggedIn && options.authenticated) {
-      return this.redirect('atSignIn');
-    }
-
-    // We want to execute our EscapeActions.executeUpTo method any time the
-    // route is changed, but not if the stays the same but only the parameters
-    // change (eg when a user is navigation from a card A to a card B). Iron-
-    // Router onBeforeAction is a reactive context (which is a bad desig choice
-    // as explained in
-    // https://github.com/meteorhacks/flow-router#routercurrent-is-evil) so we
-    // need to use Tracker.nonreactive
-    Tracker.nonreactive(function() {
-      if (! options.noEscapeActions &&
-          ! (previousRoute && previousRoute.options.noEscapeActions))
+    // If we close a card, we'll execute again this route action but we don't
+    // want to excape every current actions (filters, etc.)
+    if (previousBoard !== currentBoard) {
       EscapeActions.executeAll();
-    });
+    } else {
+      EscapeActions.executeUpTo('popup-close');
+    }
 
-    previousRoute = this.route;
+    BlazeLayout.render('defaultLayout', { content: 'board' });
+  },
+});
 
-    this.next();
-  }
+FlowRouter.route('/b/:boardId/:slug/:cardId', {
+  name: 'card',
+  action(params) {
+    EscapeActions.executeUpTo('inlinedForm');
+
+    Session.set('currentBoard', params.boardId);
+    Session.set('currentCard', params.cardId);
+
+    BlazeLayout.render('defaultLayout', { content: 'board' });
+  },
+});
+
+FlowRouter.route('/shortcuts', {
+  name: 'shortcuts',
+  action() {
+    const shortcutsTemplate = 'keyboardShortcuts';
+
+    EscapeActions.executeUpTo('popup-close');
+
+    if (previousPath) {
+      Modal.open(shortcutsTemplate, {
+        onCloseGoTo: previousPath,
+      });
+    } else {
+      // XXX There is currently no way to escape this page on Sandstorm
+      BlazeLayout.render('defaultLayout', { content: shortcutsTemplate });
+    }
+  },
+});
+
+FlowRouter.notFound = {
+  action() {
+    BlazeLayout.render('defaultLayout', { content: 'notFound' });
+  },
+};
+
+// We maintain a list of redirections to ensure that we don't break old URLs
+// when we change our routing scheme.
+const redirections = {
+  '/boards': '/',
+  '/boards/:id/:slug': '/b/:id/:slug',
+  '/boards/:id/:slug/:cardId': '/b/:id/:slug/:cardId',
+};
+
+_.each(redirections, (newPath, oldPath) => {
+  FlowRouter.route(oldPath, {
+    triggersEnter: [(context, redirect) => {
+      redirect(FlowRouter.path(newPath, context.params));
+    }],
+  });
 });

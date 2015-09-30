@@ -3,7 +3,7 @@
 #header
   color: white
   transition: background-color 0.4s
-  background: #27AE60
+  background: #2980B9
 
   #header-quick-access
     background-color: rgba(0, 0, 0, 0.2)
@@ -13,6 +13,7 @@
     display: flex
 
     #header-user-bar,
+    #header-new-board-icon,
     ul li
       color: darken(white, 17%)
 
@@ -23,9 +24,9 @@
         color: white
 
     ul
-      flex: 1
       transition: opacity 0.2s
       margin: 4px 0 0 5px
+      overflow: hidden
 
       li
         display: block
@@ -42,6 +43,10 @@
 
         a.js-create-board
           margin-left: 5px
+
+    #header-user-bar,
+    #header-new-board-icon
+      flex-shrink: 0
 
     #header-user-bar
       margin: 2px 0
@@ -62,6 +67,11 @@
         i.fa-chevron-down
           margin-right: 4px
 
+    #header-new-board-icon
+      flex-grow: 1
+      margin: 6px 5px 0
+      width: 12px
+
   #header-main-bar
     height: 28px * 1.618034 - 6px
     padding: 7px 10px 0
@@ -74,6 +84,16 @@
       margin-right: 10px
       float: left
       border-radius: 3px
+
+    .wekan-logo
+      display: block
+      margin: 3px auto 0
+      width: 97px
+      opacity: 0.6
+      transition: opacity 0.15s
+
+      &:hover
+        opacity: 0.9
 
     .board-header-btns
       display: block
@@ -106,6 +126,8 @@
         margin: 0 10px
 
         + span
+          display: inline-block
+          margin-top: 1px
           margin-right: 10px
 
       .board-header-btn-close
@@ -117,7 +139,7 @@
     .board-header-btn,
     h1.is-clickable
       &.is-active,
-      &:hover
+      &:hover:not(.is-disabled)
         background: rgba(0, 0, 0, .15)
 
     .separator

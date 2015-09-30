@@ -1,35 +1,62 @@
-// XXX Pressing `?` should display a list of all shortcuts available.
-//
 // XXX There is no reason to define these shortcuts globally, they should be
 // attached to a template (most of them will go in the `board` template).
 
-Mousetrap.bind('w', function() {
-  Sidebar.toogle();
+Mousetrap.bind('?', () => {
+  FlowRouter.go('shortcuts');
 });
 
-Mousetrap.bind('q', function() {
-  var currentBoardId = Session.get('currentBoard');
-  var currentUserId = Meteor.userId();
+Mousetrap.bind('w', () => {
+  Sidebar.toggle();
+});
+
+Mousetrap.bind('q', () => {
+  const currentBoardId = Session.get('currentBoard');
+  const currentUserId = Meteor.userId();
   if (currentBoardId && currentUserId) {
-    Filter.members.toogle(currentUserId);
+    Filter.members.toggle(currentUserId);
   }
 });
 
-Mousetrap.bind('x', function() {
+Mousetrap.bind('x', () => {
   if (Filter.isActive()) {
     Filter.reset();
   }
 });
 
-Mousetrap.bind(['down', 'up'], function(evt, key) {
-  if (! Session.get('currentCard')) {
+Mousetrap.bind(['down', 'up'], (evt, key) => {
+  if (!Session.get('currentCard')) {
     return;
   }
 
-  var nextFunc = (key === 'down' ? 'next' : 'prev');
-  var nextCard = $('.js-minicard.is-selected')[nextFunc]('.js-minicard').get(0);
+  const nextFunc = (key === 'down' ? 'next' : 'prev');
+  const nextCard = $('.js-minicard.is-selected')[nextFunc]('.js-minicard').get(0);
   if (nextCard) {
-    var nextCardId = Blaze.getData(nextCard)._id;
+    const nextCardId = Blaze.getData(nextCard)._id;
     Utils.goCardId(nextCardId);
   }
+});
+
+Template.keyboardShortcuts.helpers({
+  mapping: [{
+    keys: ['W'],
+    action: 'shortcut-toggle-sidebar',
+  }, {
+    keys: ['Q'],
+    action: 'shortcut-filter-my-cards',
+  }, {
+    keys: ['X'],
+    action: 'shortcut-clear-filters',
+  }, {
+    keys: ['?'],
+    action: 'shortcut-show-shortcuts',
+  }, {
+    keys: ['ESC'],
+    action: 'shortcut-close-dialog',
+  }, {
+    keys: ['@'],
+    action: 'shortcut-autocomplete-members',
+  }, {
+    keys: [':'],
+    action: 'shortcut-autocomplete-emojies',
+  }],
 });

@@ -1,6 +1,6 @@
 template(name="sidebar")
   .board-sidebar.sidebar(class="{{#if isOpen}}is-open{{/if}}")
-    a.sidebar-tongue.js-toogle-sidebar(
+    a.sidebar-tongue.js-toggle-sidebar(
       class="{{#if isTongueHidden}}is-hidden{{/if}}")
       i.fa.fa-angle-left
     .sidebar-content.js-board-sidebar-content.js-perfect-scrollbar
@@ -26,7 +26,7 @@ template(name="membersWidget")
       i.fa.fa-user
       | {{_ 'members'}}
     .board-widget-content
-      each currentBoard.members
+      each currentBoard.activeMembers
         +userAvatar(userId=this.userId showStatus=true)
       unless isSandstorm
         if currentUser.isBoardAdmin
@@ -41,55 +41,59 @@ template(name="labelsWidget")
       | {{_ 'labels'}}
     .board-widget-content
       each currentBoard.labels
-          a.card-label(class="card-label-{{color}}").js-label
+          a.card-label(class="card-label-{{color}}"
+            class="{{#if currentUser.isBoardMember}}js-label{{/if}}")
             span.card-label-name= name
-      a.card-label.add-label.js-add-label
-        i.fa.fa-plus
+      if currentUser.isBoardAdmin
+        a.card-label.add-label.js-add-label
+          i.fa.fa-plus
 
 template(name="memberPopup")
   .board-member-menu
     .miniprofile-header
-      +userAvatar(userId=user._id)
+      +userAvatar(userId=user._id showEdit=true)
       .info
-        h3.bottom
-          .js-profile
-            = user.profile.fullname
-        p.quiet.bottom @#{user.username}
+        h3
+          .js-profile= user.profile.fullname
+        p.quiet @#{user.username}
 
     if currentUser.isBoardMember
       ul.pop-over-list
         li
           a.js-filter-member Filter cards
-        if currentUser.isBoardAdmin
-          li
-            a.js-change-role
-              | {{_ 'change-permissions'}}
-              span.quiet (#{memberType})
-          li
-            if currentUser.isBoardAdmin
-              a.js-remove-member {{_ 'remove-from-board'}}
-            else
-              a.js-leave-member {{_ 'leave-board'}}
+        unless isSandstorm
+          if currentUser.isBoardAdmin
+            li
+              a.js-change-role
+                | {{_ 'change-permissions'}}
+                span.quiet (#{memberType})
+            li
+              if $eq currentUser._id userId
+                //-
+                  XXX Not implemented!
+                // a.js-leave-member {{_ 'leave-board'}}
+              else
+                a.js-remove-member {{_ 'remove-from-board'}}
 
 
 template(name="removeMemberPopup")
-  p {{_ 'remove-member-pop' name=user.profile.fullname username=user.username boardTitle=board.title}}
+  p {{_ 'remove-member-pop' name=user.profile.name username=user.username boardTitle=board.title}}
   button.js-confirm.negate.full(type="submit") {{_ 'remove-member'}}
 
 template(name="addMemberPopup")
   .js-search-member
     +esInput(index="users")
 
-  ul.pop-over-member-list
+  ul.pop-over-list
     +esEach(index="users")
-      li.item.js-member-item(class="{{#if isBoardMember }}disabled{{/if}}")
-        a.name.js-select-member(title="{{ profile.fullname }} ({{ username }})")
-          +userAvatar(userId=_id)
+      li.item.js-member-item(class="{{#if isBoardMember}}disabled{{/if}}")
+        a.name.js-select-member(title="{{profile.name}} ({{username}})")
+          +userAvatar(userId=_id esSearch=true)
           span.full-name
-            = profile.fullname
-            | (<span class="username">{{ username }}</span>)
+            = profile.name
+            | (<span class="username">{{username}}</span>)
           if isBoardMember
-            .extra-text.quiet ({{_ 'joined'}})
+            .quiet ({{_ 'joined'}})
 
     +ifEsIsSearching(index='users')
       +spinner

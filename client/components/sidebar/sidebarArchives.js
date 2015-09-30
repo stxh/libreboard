@@ -1,26 +1,46 @@
 BlazeComponent.extendComponent({
-  template: function() {
+  template() {
     return 'archivesSidebar';
   },
-  archivedCards: function() {
-    return Cards.find({archived: true});
+
+  tabs() {
+    return [
+      { name: TAPi18n.__('cards'), slug: 'cards' },
+      { name: TAPi18n.__('lists'), slug: 'lists' },
+    ];
   },
 
-  onRendered: function() {
-    //XXX We should support dragging a card from the sidebar to the board
+  archivedCards() {
+    return Cards.find({ archived: true });
   },
 
-  events: function() {
+  archivedLists() {
+    return Lists.find({ archived: true });
+  },
+
+  cardIsInArchivedList() {
+    return this.currentData().list().archived;
+  },
+
+  onRendered() {
+    // XXX We should support dragging a card from the sidebar to the board
+  },
+
+  events() {
     return [{
-      'click .js-restore': function() {
-        var cardId = this.currentData()._id;
+      'click .js-restore-card'() {
+        const cardId = this.currentData()._id;
         Cards.update(cardId, {$set: {archived: false}});
       },
-      'click .js-delete': Popup.afterConfirm('cardDelete', function() {
-        var cardId = this._id;
+      'click .js-delete-card': Popup.afterConfirm('cardDelete', function() {
+        const cardId = this._id;
         Cards.remove(cardId);
         Popup.close();
-      })
+      }),
+      'click .js-restore-list'() {
+        const listId = this.currentData()._id;
+        Lists.update(listId, {$set: {archived: false}});
+      },
     }];
-  }
+  },
 }).register('archivesSidebar');

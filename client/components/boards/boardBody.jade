@@ -1,39 +1,40 @@
-//-
-  XXX This template can't be transformed into a component because it is
-  included by iron-router. That's a bug.
-  See https://github.com/peerlibrary/meteor-blaze-components/issues/44
 template(name="board")
-  +boardComponent
-
-template(name="boardComponent")
-  if this
-    .board-wrapper(class=colorClass)
-      .board-canvas(
-        class=sidebarSize
-        class="{{#if MultiSelection.isActive}}is-multiselection-active{{/if}}"
-        class="{{#if draggingActive.get}}is-dragging-active{{/if}}")
-        if showOverlay.get
-          .board-overlay
-        .lists.js-lists
-          each lists
-            +list(this)
-            if currentCardIsInThisList
-              +cardDetails(currentCard)
-          if currentUser.isBoardMember
-            +addListForm
-      +sidebar
+  if isBoardReady.get
+    if currentBoard
+      +boardBody
+    else
+      //- XXX We need a better error message in case the board has been archived
+      +message(label="board-not-found")
   else
-    +message(label="board-no-found")
+    +spinner
+
+template(name="boardBody")
+  .board-wrapper(class=currentBoard.colorClass)
+    +sidebar
+    .board-canvas(
+      class="{{#if Sidebar.isOpen}}is-sibling-sidebar-open{{/if}}"
+      class="{{#if MultiSelection.isActive}}is-multiselection-active{{/if}}"
+      class="{{#if draggingActive.get}}is-dragging-active{{/if}}")
+      if showOverlay.get
+        .board-overlay
+      .lists.js-lists
+        each currentBoard.lists
+          +list(this)
+          if currentCardIsInThisList
+            +cardDetails(currentCard)
+        if currentUser.isBoardMember
+          +addListForm
 
 template(name="addListForm")
   .list.js-list.list-composer.js-list-composer
-    +inlinedForm(autoclose=false)
-      input.list-name-input(type="text" placeholder="{{_ 'add-list'}}"
-        autocomplete="off" autofocus)
-      .edit-controls.clearfix
-        button.primary.confirm(type="submit") {{_ 'save'}}
-        a.fa.fa-times-thin.js-close-inlined-form
-    else
-      a.js-open-inlined-form
-        i.fa.fa-plus
-        | {{_ 'add-list'}}
+    .list-header
+      +inlinedForm(autoclose=false)
+        input.list-name-input.full-line(type="text" placeholder="{{_ 'add-list'}}"
+          autocomplete="off" autofocus)
+        .edit-controls.clearfix
+          button.primary.confirm(type="submit") {{_ 'save'}}
+          a.fa.fa-times-thin.js-close-inlined-form
+      else
+        a.open-list-composer.js-open-inlined-form
+          i.fa.fa-plus
+          | {{_ 'add-list'}}

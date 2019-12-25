@@ -30,9 +30,9 @@ with [Meteor](https://www.meteor.com).
 
 [screenshot]: http://i.imgur.com/cI4jW2h.png
 [gitter_badge]: https://badges.gitter.im/Join%20Chat.svg
-[gitter_chat]: https://gitter.im/wekan/wekan
+[gitter_chat]: https://gitter.im/stxh/wekan
 [roadmap]: http://try.wekan.io/b/MeSsFJaSqeuo9M6bs/wekan-roadmap
 [sandstorm_market]: https://oasis.sandstorm.io/appdemo/m86q05rdvj14yvn78ghaxynqz7u2svw6rnttptxx49g1785cdv1h
 [docker_image]: https://hub.docker.com/r/mquandalle/wekan/
 [heroku_button]: https://www.herokucdn.com/deploy/button.png
-[heroku_deploy]: https://heroku.com/deploy?template=https://github.com/wekan/wekan/tree/master
+[heroku_deploy]: https://heroku.com/deploy?template=https://github.com/stxh/wekan/tree/master
